@@ -69,3 +69,32 @@ test-without-building-tvos:
 .PHONY: test-without-building-watchos
 test-without-building-watchos:
 	set -o pipefail && xcodebuild $(XCODEBUILD_OPTIONS_WATCHOS) test-without-building | xcbeautify
+
+.PHONY: build-xcframework
+build-xcframework:
+	$(MAKE) clear-build ; \
+	for target in Logging SwiftProtobuf OpenTelemetryApi OpenTelemetrySdk ResourceExtension OpenTelemetryProtocolExporterCommon OpenTelemetryProtocolExporterHttp ; do \
+		$(MAKE) target=$$target build-sdk ; \
+	done
+	$(MAKE) clear-tmp ; \
+
+.PHONY: build-sdk
+build-sdk:
+	xcodebuild -project opentelemetry-swift.xcodeproj archive -scheme $(target) -destination=iOS -archivePath tmp/archive/ios -derivedDataPath tmp/ios -sdk iphoneos SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+	xcodebuild -project opentelemetry-swift.xcodeproj archive -scheme $(target) -destination="iOS Simulator" -archivePath tmp/archive/ios-sim -derivedDataPath tmp/ios-sim -sdk iphonesimulator SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+	xcodebuild -project opentelemetry-swift.xcodeproj archive -scheme $(target) -destination=watchOS -archivePath tmp/archive/watchos -derivedDataPath tmp/watchos -sdk watchos SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+	xcodebuild -project opentelemetry-swift.xcodeproj archive -scheme $(target) -destination="watchOS Simulator" -archivePath tmp/archive/watchos-sim -derivedDataPath tmp/watchos-sim -sdk watchsimulator SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+	xcodebuild -create-xcframework \
+		-framework tmp/archive/ios.xcarchive/Products/Library/Frameworks/$(target).framework -debug-symbols `pwd`/tmp/archive/ios.xcarchive/dSYMs/$(target).framework.dSYM \
+		-framework tmp/archive/ios-sim.xcarchive/Products/Library/Frameworks/$(target).framework -debug-symbols `pwd`/tmp/archive/ios-sim.xcarchive/dSYMs/$(target).framework.dSYM \
+		-framework tmp/archive/watchos.xcarchive/Products/Library/Frameworks/$(target).framework -debug-symbols `pwd`/tmp/archive/watchos.xcarchive/dSYMs/$(target).framework.dSYM \
+		-framework tmp/archive/watchos-sim.xcarchive/Products/Library/Frameworks/$(target).framework -debug-symbols `pwd`/tmp/archive/watchos-sim.xcarchive/dSYMs/$(target).framework.dSYM \
+		-output ./frameworks/$(target).xcframework
+
+.PHONY: clear-tmp
+clear-tmp:
+	rm -rf ./tmp
+
+.PHONY: clear-build
+clear-build:
+	rm -rf ./frameworks
