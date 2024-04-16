@@ -20,6 +20,7 @@ public class SynchronousMetricStorage: SynchronousMetricStorageProtocol {
     var aggregatorHandles = [[String: AttributeValue]: AggregatorHandle]()
     let attributeProcessor: AttributeProcessor
     var aggregatorHandlePool = [AggregatorHandle]()
+	let storageLock = Lock()
     
     static func empty() -> SynchronousMetricStorageProtocol {
         return EmptyMetricStorage.instance
@@ -67,20 +68,30 @@ public class SynchronousMetricStorage: SynchronousMetricStorageProtocol {
     }
     
     public func collect(resource: Resource, scope: InstrumentationScopeInfo, startEpochNanos: UInt64, epochNanos: UInt64) -> StableMetricData {
+		storageLock.lock()
+		defer {
+			storageLock.unlock()
+		}
+		
         let reset = aggregatorTemporality == .delta
         let start = reset ? registeredReader.lastCollectedEpochNanos : startEpochNanos
         
         var points = [PointData]()
         
+		let keys = aggregatorHandles.keys
         aggregatorHandles.forEach { key, value in
             let point = value.aggregateThenMaybeReset(startEpochNano: start, endEpochNano: epochNanos, attributes: key, reset: reset)
             if reset {
-                aggregatorHandles.removeValue(forKey: key)
                 aggregatorHandlePool.append(value)
             }
             points.append(point)
         }
-        
+		if reset {
+			for removeKey in keys {
+				aggregatorHandles.removeValue(forKey: removeKey)
+			}
+		}
+		
         if points.isEmpty {
             return StableMetricData.empty
         }
@@ -92,6 +103,11 @@ public class SynchronousMetricStorage: SynchronousMetricStorageProtocol {
     }
     
     public func recordLong(value: Int, attributes: [String: OpenTelemetryApi.AttributeValue]) {
+		storageLock.lock()
+		defer {
+			storageLock.unlock()
+		}
+		
         do {
             let handle = try getAggregatorHandle(attributes: attributes)
             handle.recordLong(value: value, attributes: attributes)
@@ -103,6 +119,11 @@ public class SynchronousMetricStorage: SynchronousMetricStorageProtocol {
     }
     
     public func recordDouble(value: Double, attributes: [String: OpenTelemetryApi.AttributeValue]) {
+		storageLock.lock()
+		defer {
+			storageLock.unlock()
+		}
+		
         do {
             let handle = try getAggregatorHandle(attributes: attributes)
             handle.recordDouble(value: value, attributes: attributes)
