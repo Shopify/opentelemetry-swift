@@ -1,0 +1,261 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.9.2 (swiftlang-5.9.2.2.56 clang-1500.1.0.2.5)
+// swift-module-flags: -target arm64-apple-watchos2.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name Logging
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+import Darwin
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public protocol LogHandler : Logging._SwiftLogSendableLogHandler {
+  func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, source: Swift.String, file: Swift.String, function: Swift.String, line: Swift.UInt)
+  @available(*, deprecated, renamed: "log(level:message:metadata:source:file:function:line:)")
+  func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, file: Swift.String, function: Swift.String, line: Swift.UInt)
+  subscript(metadataKey _: Swift.String) -> Logging.Logger.Metadata.Value? { get set }
+  var metadata: Logging.Logger.Metadata { get set }
+  var logLevel: Logging.Logger.Level { get set }
+}
+extension Logging.LogHandler {
+  @available(*, deprecated, message: "You should implement this method instead of using the default implementation")
+  public func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, source: Swift.String, file: Swift.String, function: Swift.String, line: Swift.UInt)
+  @available(*, deprecated, renamed: "log(level:message:metadata:source:file:function:line:)")
+  public func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, file: Swift.String, function: Swift.String, line: Swift.UInt)
+}
+@preconcurrency public protocol _SwiftLogSendableLogHandler : Swift.Sendable {
+}
+public struct Logger {
+  @usableFromInline
+  internal var handler: any Logging.LogHandler
+  public let label: Swift.String
+}
+extension Logging.Logger {
+  @inlinable public func log(level: Logging.Logger.Level, _ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        if self.logLevel <= level {
+            self.handler.log(level: level,
+                             message: message(),
+                             metadata: metadata(),
+                             source: source() ?? Logger.currentModule(fileID: (file)),
+                             file: file, function: function, line: line)
+        }
+    }
+  @inlinable public func log(level: Logging.Logger.Level, _ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: level, message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public subscript(metadataKey metadataKey: Swift.String) -> Logging.Logger.Metadata.Value? {
+    get {
+            return self.handler[metadataKey: metadataKey]
+        }
+    set {
+            self.handler[metadataKey: metadataKey] = newValue
+        }
+  }
+  @inlinable public var logLevel: Logging.Logger.Level {
+    get {
+            return self.handler.logLevel
+        }
+    set {
+            self.handler.logLevel = newValue
+        }
+  }
+}
+extension Logging.Logger {
+  @inlinable public func trace(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .trace, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func trace(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.trace(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public func debug(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .debug, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func debug(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.debug(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public func info(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .info, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func info(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.info(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public func notice(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .notice, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func notice(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.notice(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public func warning(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .warning, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func warning(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.warning(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public func error(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .error, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func error(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.error(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+  @inlinable public func critical(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, source: @autoclosure () -> Swift.String? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.log(level: .critical, message(), metadata: metadata(), source: source(), file: file, function: function, line: line)
+    }
+  @inlinable public func critical(_ message: @autoclosure () -> Logging.Logger.Message, metadata: @autoclosure () -> Logging.Logger.Metadata? = nil, file: Swift.String = #fileID, function: Swift.String = #function, line: Swift.UInt = #line) {
+        self.critical(message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+    }
+}
+public enum LoggingSystem {
+  public static func bootstrap(_ factory: @escaping (Swift.String) -> any Logging.LogHandler)
+}
+extension Logging.Logger {
+  public typealias Metadata = [Swift.String : Logging.Logger.MetadataValue]
+  public enum MetadataValue {
+    case string(Swift.String)
+    case stringConvertible(any Swift.CustomStringConvertible & Swift.Sendable)
+    case dictionary(Logging.Logger.Metadata)
+    case array([Logging.Logger.Metadata.Value])
+  }
+  public enum Level : Swift.String, Swift.Codable, Swift.CaseIterable {
+    case trace
+    case debug
+    case info
+    case notice
+    case warning
+    case error
+    case critical
+    public init?(rawValue: Swift.String)
+    public typealias AllCases = [Logging.Logger.Level]
+    public typealias RawValue = Swift.String
+    public static var allCases: [Logging.Logger.Level] {
+      get
+    }
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public init(label: Swift.String)
+  public init(label: Swift.String, factory: (Swift.String) -> any Logging.LogHandler)
+}
+extension Logging.Logger.Level : Swift.Comparable {
+  public static func < (lhs: Logging.Logger.Level, rhs: Logging.Logger.Level) -> Swift.Bool
+}
+extension Logging.Logger.MetadataValue : Swift.Equatable {
+  public static func == (lhs: Logging.Logger.Metadata.Value, rhs: Logging.Logger.Metadata.Value) -> Swift.Bool
+}
+extension Logging.Logger {
+  public struct Message : Swift.ExpressibleByStringLiteral, Swift.Equatable, Swift.CustomStringConvertible, Swift.ExpressibleByStringInterpolation {
+    public typealias StringLiteralType = Swift.String
+    public init(stringLiteral value: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+    public static func == (a: Logging.Logger.Message, b: Logging.Logger.Message) -> Swift.Bool
+    public typealias ExtendedGraphemeClusterLiteralType = Logging.Logger.Message.StringLiteralType
+    public typealias StringInterpolation = Swift.DefaultStringInterpolation
+    public typealias UnicodeScalarLiteralType = Logging.Logger.Message.StringLiteralType
+  }
+}
+public struct MultiplexLogHandler : Logging.LogHandler {
+  public init(_ handlers: [any Logging.LogHandler])
+  public var logLevel: Logging.Logger.Level {
+    get
+    set
+  }
+  public func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, source: Swift.String, file: Swift.String, function: Swift.String, line: Swift.UInt)
+  public var metadata: Logging.Logger.Metadata {
+    get
+    set
+  }
+  public subscript(metadataKey metadataKey: Logging.Logger.Metadata.Key) -> Logging.Logger.Metadata.Value? {
+    get
+    set
+  }
+}
+public struct StreamLogHandler : Logging.LogHandler {
+  public static func standardOutput(label: Swift.String) -> Logging.StreamLogHandler
+  public static func standardError(label: Swift.String) -> Logging.StreamLogHandler
+  public var logLevel: Logging.Logger.Level
+  public var metadata: Logging.Logger.Metadata {
+    get
+    set
+  }
+  public subscript(metadataKey metadataKey: Swift.String) -> Logging.Logger.Metadata.Value? {
+    get
+    set
+  }
+  public func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, source: Swift.String, file: Swift.String, function: Swift.String, line: Swift.UInt)
+}
+public struct SwiftLogNoOpLogHandler : Logging.LogHandler {
+  public init()
+  public init(_: Swift.String)
+  @inlinable public func log(level: Logging.Logger.Level, message: Logging.Logger.Message, metadata: Logging.Logger.Metadata?, file: Swift.String, function: Swift.String, line: Swift.UInt) {}
+  @inlinable public subscript(metadataKey _: Swift.String) -> Logging.Logger.Metadata.Value? {
+    get {
+            return nil
+        }
+    set {}
+  }
+  @inlinable public var metadata: Logging.Logger.Metadata {
+    get {
+            return [:]
+        }
+    set {}
+  }
+  @inlinable public var logLevel: Logging.Logger.Level {
+    get {
+            return .critical
+        }
+    set {}
+  }
+}
+extension Logging.Logger {
+  @inlinable internal static func currentModule(filePath: Swift.String = #file) -> Swift.String {
+        let utf8All = filePath.utf8
+        return filePath.utf8.lastIndex(of: UInt8(ascii: "/")).flatMap { lastSlash -> Substring? in
+            utf8All[..<lastSlash].lastIndex(of: UInt8(ascii: "/")).map { secondLastSlash -> Substring in
+                filePath[utf8All.index(after: secondLastSlash) ..< lastSlash]
+            }
+        }.map {
+            String($0)
+        } ?? "n/a"
+    }
+  @inlinable internal static func currentModule(fileID: Swift.String = #fileID) -> Swift.String {
+        let utf8All = fileID.utf8
+        if let slashIndex = utf8All.firstIndex(of: UInt8(ascii: "/")) {
+            return String(fileID[..<slashIndex])
+        } else {
+            return "n/a"
+        }
+    }
+}
+extension Logging.Logger.MetadataValue : Swift.ExpressibleByStringLiteral {
+  public typealias StringLiteralType = Swift.String
+  public init(stringLiteral value: Swift.String)
+  public typealias ExtendedGraphemeClusterLiteralType = Logging.Logger.MetadataValue.StringLiteralType
+  public typealias UnicodeScalarLiteralType = Logging.Logger.MetadataValue.StringLiteralType
+}
+extension Logging.Logger.MetadataValue : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension Logging.Logger.MetadataValue : Swift.ExpressibleByStringInterpolation {
+  public typealias StringInterpolation = Swift.DefaultStringInterpolation
+}
+extension Logging.Logger.MetadataValue : Swift.ExpressibleByDictionaryLiteral {
+  public typealias Key = Swift.String
+  public typealias Value = Logging.Logger.Metadata.Value
+  public init(dictionaryLiteral elements: (Swift.String, Logging.Logger.Metadata.Value)...)
+}
+extension Logging.Logger.MetadataValue : Swift.ExpressibleByArrayLiteral {
+  public typealias ArrayLiteralElement = Logging.Logger.Metadata.Value
+  public init(arrayLiteral elements: Logging.Logger.Metadata.Value...)
+}
+extension Logging.Logger.MetadataValue : Swift.Sendable {
+}
+extension Logging.Logger : Swift.Sendable {
+}
+extension Logging.Logger.Level : Swift.Sendable {
+}
+extension Logging.Logger.Message : Swift.Sendable {
+}
+extension Logging.Logger.Level : Swift.Hashable {}
+extension Logging.Logger.Level : Swift.RawRepresentable {}
