@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "OpenTelemetryApi"
-  spec.version      = "1.9.3-beta"
+  spec.version      = "1.9.3-beta2"
   spec.summary      = "opentelemetry-swift OpenTelemetryApi SDK for iOS"
   spec.description  = <<-DESC
   OpenTelemetry iOS OpenTelemetryApi SDK distributed via Cocoapods

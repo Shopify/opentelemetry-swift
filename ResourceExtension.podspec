@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "ResourceExtension"
-  spec.version      = "1.9.3-beta"
+  spec.version      = "1.9.3-beta2"
   spec.summary      = "opentelemetry-swift ResourceExtension SDK for iOS"
   spec.description  = <<-DESC
   OpenTelemetry iOS ResourceExtension SDK distributed via Cocoapods
