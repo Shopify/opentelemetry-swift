@@ -18,9 +18,9 @@ let package = Package(name: "opentelemetry-swift",
                         .library(name: "DataCompression", type: .static, targets: ["DataCompression"]),
                       ],
                       dependencies: [
-                        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.20.2"),
-                        .package(url: "https://github.com/apple/swift-log.git", from: "1.4.4"),
-                        .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0")
+                        .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.33.1"),
+                        .package(url: "https://github.com/apple/swift-log.git", exact: "1.6.3"),
+                        .package(url: "https://github.com/apple/swift-atomics.git", exact: "1.3.0")
                       ],
                       targets: [
                         .target(name: "OpenTelemetryApi",
